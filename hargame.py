@@ -60,6 +60,7 @@ class Player(Character):
             ax -= size
             px += int(size/2)
             ay += size
+            pygame.draw.rect(gameDisplay, green, [ax, ay, size, size])
         # check if there are any monsters on (px, py) and decrease monster hp (damage: self.att += randint(-4, 4))
         elif facing == 1:  # facing right
             ax += size * 2
