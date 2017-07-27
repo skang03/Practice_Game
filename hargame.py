@@ -21,7 +21,7 @@ smallfont = pygame.font.SysFont(None, 25)
 largefont = pygame.font.SysFont(None, 50)
 
 monsterlist = []
-
+walllist = []
 
 class Character():
     def __init__(self):
@@ -173,14 +173,31 @@ def char_draw(character):
     pygame.draw.rect(gameDisplay, color, [x, y, charsize, charsize])
     score(1)
 
-
+	
 def map_draw():
     gameDisplay.fill(black)
     gameDisplay.fill(white, [50, 50, 700, 500])
 
+class Wall():
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.size = 40
+        self.color = green
 
-
-
+def wall_draw(wall):
+    x = wall.x
+    y = wall.y
+    wallsize = wall.size
+    color = wall.color
+    pygame.draw.rect(gameDisplay, color, [x, y, wallsize, wallsize])
+	
+def populate_map():
+    wall_loc = [[270, 350], [310, 350], [350, 350], [390, 350], [430, 350], [350, 310], [350, 270]]
+    for i in range(0, len(wall_loc)):
+        wall = Wall(wall_loc[i][0], wall_loc[i][1])
+        walllist.append(wall)
+		
 def gameLoop():
     gameExit = False
     gameOver = False
@@ -213,12 +230,15 @@ def gameLoop():
                         gameLoop()
 
         map_draw()
-
+        populate_map()
         check_hp()
 
         for mon in monsterlist:
             mon.move(dood)
             char_draw(mon)
+
+        for wall in walllist:
+            wall_draw(wall)
 
         char_draw(dood)
 
@@ -270,3 +290,5 @@ def gameLoop():
     pygame.quit()
     quit()
 gameLoop()
+
+# C:\Python36\python.exe "C:\Users\iho\Desktop\My Projects\top-down gamu\Practice_Game\hargame.py"
