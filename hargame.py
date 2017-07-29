@@ -76,7 +76,7 @@ class Player(Character):
             py += int(size/2)
             ax += size
 
-        pygame.draw.rect(gameDisplay, green, [ax, ay, size, size])
+
 
 
         for mon in monsterlist:
