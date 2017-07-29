@@ -103,34 +103,18 @@ class Monster(Character):
         py = player.y
 		
         if px > self.x + 50: #character is on right of monster
-            pos = True
-            for wall in walllist:
-                if self.x + self.movespeed == wall.x and self.y >= wall.y and self.y < wall.y + 40:
-                    pos = False
-            if pos == True:
+            if check(self.x + self.movespeed, self.y):
                 self.x += self.movespeed
         if px < self.x - 50:
-            pos = True
-            for wall in walllist:
-                if self.x - self.movespeed == wall.x + wall.size and self.y >= wall.y and self.y < wall.y + 40:
-                    pos = False
-            if pos == True:
+            if check(self.x - self.movespeed, self.y):
                 self.x -= self.movespeed
         if py > self.y + 50:
-            pos = True
-            for wall in walllist:
-                if self.x >= wall.x and self.y < wall.y + 40 and self.y + 50 == wall.y + wall.size:
-                    pos = False
-            if pos == True:
+            if check(self.x, self.y + self.movespeed):
                 self.y += self.movespeed
         if py < self.y - 50:
-            pos = True
-            for wall in walllist:
-                if self.x >= wall.x and self.y < wall.y + 40 and self.y - 50 == wall.y:
-                    pos = False
-            if pos == True:
+            if check(self.x, self.y - self.movespeed):
                 self.y -= self.movespeed
-
+				
         if px <= self.x + 50 and px >= self.x - 50 and py <= self.y + 50 and py >= self.y - 50:
             if px > self.x + self.size:
                 self.x += self.movespeed
@@ -206,9 +190,21 @@ class Wall():
         self.y2 = y2
         self.color = green
 
-    def check(self, x, y):
-        #check if the coordinate is in the path of the wall. if it is, return true
-        pass
+def check(x, y):
+	#check if the coordinate is in the path of the wall. if it is, return false
+	
+    for wall in walllist:
+        if wall.x1 != wall.x2:
+            rx = range(*sorted((wall.x1, wall.x2)))
+            if x in rx and wall.y1 == y:
+                return False
+        else:
+            ry = range(*sorted((wall.y1, wall.y2)))
+            if y in ry and wall.x1 == x:
+                return False
+	
+    return True
+			
 
 def wall_draw(wall):
     x1 = wall.x1
@@ -216,12 +212,12 @@ def wall_draw(wall):
     x2 = wall.x2
     y2 = wall.y2
     color = wall.color
-    pygame.draw.line(gameDisplay, color, (x1, y1), (x2, y2), width = 2)
+    pygame.draw.line(gameDisplay, color, (x1, y1), (x2, y2), 2)
 	
 def populate_map():
     wall_loc = [[100, 100, 100, 450], [100, 450, 600, 450], [600, 450, 600, 250]]
     for i in range(0, len(wall_loc)):
-        wall = Wall(wall_loc[i][0], wall_loc[i][1], )
+        wall = Wall(wall_loc[i][0], wall_loc[i][1], wall_loc[i][2], wall_loc[i][3])
         walllist.append(wall)
 		
 def gameLoop():
@@ -268,7 +264,7 @@ def gameLoop():
             wall_draw(wall)
 
         char_draw(dood)
-
+        isoktomove = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 gameExit = True
@@ -281,6 +277,7 @@ def gameLoop():
                     current_x = 'left'
                 if event.key == pygame.K_RIGHT:
                     lead_x_change = dood.movespeed
+					
                     current_x = 'right'
                 if event.key == pygame.K_UP:
                     lead_y_change = -dood.movespeed
@@ -306,10 +303,9 @@ def gameLoop():
                     dood.attack(dir)
 
         
-        if dood.x + lead_x_change <= 720 and dood.x + lead_x_change >= 50:
+        if check(dood.x + lead_x_change, dood.y + lead_y_change):
             dood.x += lead_x_change
-        if dood.y + lead_y_change <= 520 and dood.y + lead_y_change >= 50:
-            dood.y += lead_y_change
+            dood.y += lead_y_change				
 
 
         pygame.display.update()
