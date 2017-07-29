@@ -101,15 +101,35 @@ class Monster(Character):
     def move(self, player):
         px = player.x
         py = player.y
-
-        if px > self.x + 50:
-            self.x += self.movespeed
+		
+        if px > self.x + 50: #character is on right of monster
+            pos = True
+            for wall in walllist:
+                if self.x + self.movespeed == wall.x and self.y >= wall.y and self.y < wall.y + 40:
+                    pos = False
+            if pos == True:
+                self.x += self.movespeed
         if px < self.x - 50:
-            self.x -= self.movespeed
+            pos = True
+            for wall in walllist:
+                if self.x - self.movespeed == wall.x + wall.size and self.y >= wall.y and self.y < wall.y + 40:
+                    pos = False
+            if pos == True:
+                self.x -= self.movespeed
         if py > self.y + 50:
-            self.y += self.movespeed
+            pos = True
+            for wall in walllist:
+                if self.x >= wall.x and self.y < wall.y + 40 and self.y + 50 == wall.y + wall.size:
+                    pos = False
+            if pos == True:
+                self.y += self.movespeed
         if py < self.y - 50:
-            self.y -= self.movespeed
+            pos = True
+            for wall in walllist:
+                if self.x >= wall.x and self.y < wall.y + 40 and self.y - 50 == wall.y:
+                    pos = False
+            if pos == True:
+                self.y -= self.movespeed
 
         if px <= self.x + 50 and px >= self.x - 50 and py <= self.y + 50 and py >= self.y - 50:
             if px > self.x + self.size:
@@ -132,7 +152,7 @@ class Item():
 
 
 def mon_spawn():
-    threading.Timer(5.0, mon_spawn).start()
+ #   threading.Timer(5.0, mon_spawn).start()
     x = random.randint(50, 700)
     y = random.randint(50, 500)
     mon = Monster(x, y)
@@ -193,7 +213,7 @@ def wall_draw(wall):
     pygame.draw.rect(gameDisplay, color, [x, y, wallsize, wallsize])
 	
 def populate_map():
-    wall_loc = [[270, 350], [310, 350], [350, 350], [390, 350], [430, 350], [350, 310], [350, 270]]
+    wall_loc = [[270, 350], [310, 350], [350, 350], [390, 350], [430, 350], [350, 310], [350, 270], [270, 270], [310, 270] ]
     for i in range(0, len(wall_loc)):
         wall = Wall(wall_loc[i][0], wall_loc[i][1])
         walllist.append(wall)
