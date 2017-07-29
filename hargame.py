@@ -199,23 +199,29 @@ def map_draw():
     gameDisplay.fill(white, [50, 50, 700, 500])
 
 class Wall():
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.size = 40
+    def __init__(self, x1, y1, x2, y2):
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
         self.color = green
 
+    def check(self, x, y):
+        #check if the coordinate is in the path of the wall. if it is, return true
+        pass
+
 def wall_draw(wall):
-    x = wall.x
-    y = wall.y
-    wallsize = wall.size
+    x1 = wall.x1
+    y1 = wall.y1
+    x2 = wall.x2
+    y2 = wall.y2
     color = wall.color
-    pygame.draw.rect(gameDisplay, color, [x, y, wallsize, wallsize])
+    pygame.draw.line(gameDisplay, color, (x1, y1), (x2, y2), width = 2)
 	
 def populate_map():
-    wall_loc = [[270, 350], [310, 350], [350, 350], [390, 350], [430, 350], [350, 310], [350, 270], [270, 270], [310, 270] ]
+    wall_loc = [[100, 100, 100, 450], [100, 450, 600, 450], [600, 450, 600, 250]]
     for i in range(0, len(wall_loc)):
-        wall = Wall(wall_loc[i][0], wall_loc[i][1])
+        wall = Wall(wall_loc[i][0], wall_loc[i][1], )
         walllist.append(wall)
 		
 def gameLoop():
@@ -225,6 +231,7 @@ def gameLoop():
     dood = Player()
 
     mon_spawn()
+    populate_map()
 
     lead_x_change = 0
     lead_y_change = 0
@@ -250,7 +257,7 @@ def gameLoop():
                         gameLoop()
 
         map_draw()
-        populate_map()
+
         check_hp()
 
         for mon in monsterlist:
@@ -298,6 +305,7 @@ def gameLoop():
                 if event.key == pygame.K_v:
                     dood.attack(dir)
 
+        
         if dood.x + lead_x_change <= 720 and dood.x + lead_x_change >= 50:
             dood.x += lead_x_change
         if dood.y + lead_y_change <= 520 and dood.y + lead_y_change >= 50:
