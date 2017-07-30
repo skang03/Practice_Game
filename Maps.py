@@ -20,4 +20,5 @@ class Wall():
 	def __init__(self, x1, y1, x2, y2):
 		self.box = pygame.Rect(x1, y1, x2-x1, y2-y1)
 		self.color = green
-
+		
+		
