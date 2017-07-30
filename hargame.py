@@ -2,6 +2,9 @@ import pygame
 import time
 import random
 import threading
+from Character import *
+from Items import *
+from Maps import *
 
 pygame.init()
 
@@ -19,151 +22,6 @@ pygame.display.update()
 
 smallfont = pygame.font.SysFont(None, 25)
 largefont = pygame.font.SysFont(None, 50)
-
-monsterlist = []
-walllist = []
-
-class Character():
-	def __init__(self):
-		self.hp = 0
-		self.movespeed = 0
-		self.att = 0
-		self.size = 0
-		self.x = 0
-		self.y = 0
-		self.color = black
-
-
-class Player(Character):
-	def __init__(self):
-		self.hp = 5
-		self.movespeed = 5
-		self.att = 1
-		self.x = 400
-		self.y = 300
-		self.color = red
-		self.size = 30
-
-	def move(self):
-		pass
-
-	def attack(self, facing):
-		size = self.size
-		px = self.x
-		py = self.y
-
-		ax = px
-		ay = py
-		print(facing)
-		# square made by the four points ax, ay, px, py is the area where monster hp is reduced
-		if facing == 0:  # facing left
-			ax -= size
-			px += int(size/2)
-			ay += size
-			pygame.draw.rect(gameDisplay, green, [ax, ay, size, size])
-		# check if there are any monsters on (px, py) and decrease monster hp (damage: self.att += randint(-4, 4))
-		elif facing == 1:  # facing right
-			ax += size * 2
-			px += int(size/2)
-			ay += size
-
-		elif facing == 2:  # facing up
-			ay -= size
-			py += int(size/2)
-			ax += size
-		elif facing == 3:  # facing down
-			ay += size * 2
-			py += int(size/2)
-			ax += size
-
-
-
-
-		for mon in monsterlist:
-			mx = mon.x
-			my = mon.y
-			rx = range(*sorted((ax, px)))
-			ry = range(*sorted((ay, py)))
-			if mx in rx and my in ry:
-				mon.hp -= self.att
-
-
-class Monster(Character):
-	def __init__(self, x, y):
-		self.hp = 1
-		self.movespeed = 1
-		self.att = 1
-		self.size = 10
-		self.x = x
-		self.y = y
-		self.color = gold
-
-	def move(self, player):
-		px = player.x
-		py = player.y
-		
-		if px > self.x + 50: #character is on right of monster
-			pos = True
-			for wall in walllist:
-				if self.x + self.movespeed == wall.x and self.y >= wall.y and self.y < wall.y + 40:
-					pos = False
-			if pos == True:
-				self.x += self.movespeed
-		if px < self.x - 50:
-			pos = True
-			for wall in walllist:
-				if self.x - self.movespeed == wall.x + wall.size and self.y >= wall.y and self.y < wall.y + 40:
-					pos = False
-			if pos == True:
-				self.x -= self.movespeed
-		if py > self.y + 50:
-			pos = True
-			for wall in walllist:
-				if self.x >= wall.x and self.y < wall.y + 40 and self.y + 50 == wall.y + wall.size:
-					pos = False
-			if pos == True:
-				self.y += self.movespeed
-		if py < self.y - 50:
-			pos = True
-			for wall in walllist:
-				if self.x >= wall.x and self.y < wall.y + 40 and self.y - 50 == wall.y:
-					pos = False
-			if pos == True:
-				self.y -= self.movespeed
-
-		if px <= self.x + 50 and px >= self.x - 50 and py <= self.y + 50 and py >= self.y - 50:
-			if px > self.x + self.size:
-				self.x += self.movespeed
-			if px < self.x - 30:
-				self.x -= self.movespeed
-			if py > self.y + self.size:
-				self.y += self.movespeed
-			if py < self.y - 30:
-				self.y -= self.movespeed
-
-	def attack(self, player):
-		pass
-
-
-class Item():
-	def __init__(self):
-		self.x = 0
-		self.y = 0
-
-
-def mon_spawn():
- #   threading.Timer(5.0, mon_spawn).start()
-	x = random.randint(50, 700)
-	y = random.randint(50, 500)
-	mon = Monster(x, y)
-	monsterlist.append(mon)
-
-
-def check_hp():
-	for mon in monsterlist:
-		if mon.hp <= 0:
-			monsterlist.remove(mon)
-
 
 def text_objects(text, color, size):
 	if size == "small":
@@ -185,12 +43,11 @@ def score(score):
 
 
 def char_draw(character):
-	x = character.x
-	y = character.y
-	charsize = character.size
+	character.update()
+	box = character.box
 	color = character.color
 
-	pygame.draw.rect(gameDisplay, color, [x, y, charsize, charsize])
+	pygame.draw.rect(gameDisplay, color, box)
 	score(1)
 
 	
@@ -198,17 +55,6 @@ def map_draw():
 	gameDisplay.fill(black)
 	gameDisplay.fill(white, [50, 50, 700, 500])
 
-class Wall():
-	def __init__(self, x1, y1, x2, y2):
-		self.x1 = x1
-		self.y1 = y1
-		self.x2 = x2
-		self.y2 = y2
-		self.color = green
-
-	def check(self, x, y):
-		#check if the coordinate is in the path of the wall. if it is, return true
-		pass
 
 def wall_draw(wall):
 	x1 = wall.x1
@@ -216,28 +62,21 @@ def wall_draw(wall):
 	x2 = wall.x2
 	y2 = wall.y2
 	color = wall.color
-	pygame.draw.line(gameDisplay, color, (x1, y1), (x2, y2), width = 2)
-	
-def populate_map():
-	wall_loc = [[100, 100, 100, 450], [100, 450, 600, 450], [600, 450, 600, 250]]
-	for i in range(0, len(wall_loc)):
-		wall = Wall(wall_loc[i][0], wall_loc[i][1], )
-		walllist.append(wall)
+	pygame.draw.line(gameDisplay, color, (x1, y1), (x2, y2), 7)
+
 		
 def gameLoop():
 	gameExit = False
 	gameOver = False
 
+	dir = 'none'
 	dood = Player()
 
-	mon_spawn()
-	populate_map()
+	monsterlist = []
+	walllist = []
 
-	lead_x_change = 0
-	lead_y_change = 0
-	current_x = 'null'
-	current_y = 'null'
-	dir = 0
+	mon_spawn(monsterlist)
+	populate_map(walllist)
 
 	while not gameExit:
 		while gameOver == True:
@@ -257,66 +96,49 @@ def gameLoop():
 						gameLoop()
 
 		map_draw()
-
-		check_hp()
-
-		for mon in monsterlist:
-			mon.move(dood)
-			char_draw(mon)
-
 		for wall in walllist:
 			wall_draw(wall)
 
-		char_draw(dood)
+		check_hp(monsterlist)
+
+		for mon in monsterlist:
+			mon.move(dood, walllist)
+			char_draw(mon)
+
+		keys = pygame.key.get_pressed()
+
+
+		if keys[pygame.K_UP]:
+			if check(dood.x, dood.y - dood.movespeed, walllist):
+				dood.y -= dood.movespeed
+				dir = 'up'
+		if keys[pygame.K_DOWN]:
+			if check(dood.x, dood.y + dood.movespeed, walllist):
+				dood.y += dood.movespeed
+				dir = 'down'
+		if keys[pygame.K_LEFT]:
+			if check(dood.x - dood.movespeed, dood.y, walllist):
+				dood.x -= dood.movespeed
+				dir = 'left'
+		if keys[pygame.K_RIGHT]:
+			if check(dood.x + dood.movespeed, dood.y, walllist):
+				dood.x += dood.movespeed
+				dir = 'right'
 
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				gameExit = True
-
 			if (event.type == pygame.KEYDOWN):
-				if event.key == pygame.K_g:
-					gameOver = True
-				if event.key == pygame.K_LEFT:
-					lead_x_change = -dood.movespeed
-					current_x = 'left'
-				if event.key == pygame.K_RIGHT:
-					lead_x_change = dood.movespeed
-					current_x = 'right'
-				if event.key == pygame.K_UP:
-					lead_y_change = -dood.movespeed
-					current_y = 'up'
-				if event.key == pygame.K_DOWN:
-					lead_y_change = dood.movespeed
-					current_y = 'down'
-
-			if event.type == pygame.KEYUP:
-				if event.key == pygame.K_LEFT and current_x == 'left':
-					lead_x_change = 0
-					dir = 0
-				if event.key == pygame.K_RIGHT and current_x == 'right':
-					lead_x_change = 0
-					dir = 1
-				if event.key == pygame.K_UP and current_y == 'up':
-					lead_y_change = 0
-					dir = 2
-				if event.key == pygame.K_DOWN and current_y == 'down':
-					lead_y_change = 0
-					dir = 3
-				if event.key == pygame.K_v:
-					dood.attack(dir)
+				if event.key == pygame.K_z:
+					dood.attack(dir, monsterlist)
 
 
-		if dood.x + lead_x_change <= 720 and dood.x + lead_x_change >= 50:
-			dood.x += lead_x_change
-		if dood.y + lead_y_change <= 520 and dood.y + lead_y_change >= 50:
-			dood.y += lead_y_change
-
+		char_draw(dood)
 
 		pygame.display.update()
 		clock.tick(60)
 
 	pygame.quit()
 	quit()
-gameLoop()
 
-# C:\Python36\python.exe "C:\Users\iho\Desktop\My Projects\top-down gamu\Practice_Game\hargame.py"
+gameLoop()
