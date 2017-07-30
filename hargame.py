@@ -57,12 +57,9 @@ def map_draw():
 
 
 def wall_draw(wall):
-	x1 = wall.x1
-	y1 = wall.y1
-	x2 = wall.x2
-	y2 = wall.y2
+	box = wall.box
 	color = wall.color
-	pygame.draw.line(gameDisplay, color, (x1, y1), (x2, y2), 7)
+	pygame.draw.rect(gameDisplay, color, box)
 
 		
 def gameLoop():
@@ -109,21 +106,17 @@ def gameLoop():
 
 
 		if keys[pygame.K_UP]:
-			if check(dood.x, dood.y - dood.movespeed, walllist):
-				dood.y -= dood.movespeed
-				dir = 'up'
+			dood.move('up')
+			dir = 'up'
 		if keys[pygame.K_DOWN]:
-			if check(dood.x, dood.y + dood.movespeed, walllist):
-				dood.y += dood.movespeed
-				dir = 'down'
+			dood.move('down')
+			dir = 'down'
 		if keys[pygame.K_LEFT]:
-			if check(dood.x - dood.movespeed, dood.y, walllist):
-				dood.x -= dood.movespeed
-				dir = 'left'
+			dood.move('left')
+			dir = 'left'
 		if keys[pygame.K_RIGHT]:
-			if check(dood.x + dood.movespeed, dood.y, walllist):
-				dood.x += dood.movespeed
-				dir = 'right'
+			dood.move('right')
+			dir = 'right'
 
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:

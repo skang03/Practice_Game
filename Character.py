@@ -12,16 +12,12 @@ clock = pygame.time.Clock()
 
 
 # check if the coordinate is in the path of the wall. if it is, return false
-def check(x, y, walllist):
+def check(character, walllist):
+    box = character.box
     for wall in walllist:
-        if wall.x1 != wall.x2:
-            rx = range(*sorted((wall.x1, wall.x2)))
-            if x in rx and wall.y1 == y:
-                return False
-        else:
-            ry = range(*sorted((wall.y1, wall.y2)))
-            if y in ry and wall.x1 == x:
-                return False
+        wbox = wall.box
+        if box.colliderect(wbox):
+            return False
     return True
 
 
@@ -49,6 +45,22 @@ class Character():
         self.y = 0
         self.color = black
         self.box = pygame.Rect(self.x, self.y,self.size,self.size)
+
+    def move(self, dir):
+        dx = 0
+        dy = 0
+        
+        if dir == 'up':
+            self.y -= self.movespeed
+
+        if dir == 'down':
+            self.y += self.movespeed
+
+        if dir == 'left':
+            self.x -= self.movespeed
+
+        if dir == 'right':
+            self.x += self.movespeed
 
     def update(self):
         self.box = pygame.Rect(self.x, self.y,self.size,self.size)
@@ -118,20 +130,22 @@ class Monster(Character):
         self.box = pygame.Rect(self.x, self.y, self.size, self.size)
 
     def move(self, player, walllist):
-        px = player.x
-        py = player.y
+        px = player.box.center[0]
+        py = player.box.center[1]
+        pbox = player.box
+        mbox = self.box
 
         if px > self.x + 50:  # character is on right of monster
-            if check(self.x + self.movespeed, self.y, walllist):
+            if check(self, walllist):
                 self.x += self.movespeed
         if px < self.x - 50:
-            if check(self.x - self.movespeed, self.y, walllist):
+            if check(self, walllist):
                 self.x -= self.movespeed
         if py > self.y + 50:
-            if check(self.x, self.y + self.movespeed, walllist):
+            if check(self, walllist):
                 self.y += self.movespeed
         if py < self.y - 50:
-            if check(self.x, self.y - self.movespeed, walllist):
+            if check(self, walllist):
                 self.y -= self.movespeed
 
         if px <= self.x + 50 and px >= self.x - 50 and py <= self.y + 50 and py >= self.y - 50:
