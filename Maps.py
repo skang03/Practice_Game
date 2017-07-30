@@ -22,4 +22,9 @@ class Wall():
 		self.y1 = y1
 		self.x2 = x2
 		self.y2 = y2
+<<<<<<< HEAD
 		self.color = green
+=======
+		self.color = green
+
+>>>>>>> 9ab5fcd76c3756675103c35aad6d3f7fbaf90825
