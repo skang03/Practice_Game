@@ -11,7 +11,7 @@ gold = (212, 175, 55)
 clock = pygame.time.Clock()
 
 def populate_map(walllist):
-	wall_loc = [[100, 100, 105, 450], [100, 450, 600, 455], [595, 250, 600, 450]]
+	wall_loc = [[100, 100, 105, 450], [100, 450, 600, 455], [595, 450, 600, 200],[45, 45, 750, 50],[750, 45, 755, 555], [755, 555, 45, 550], [45, 555, 50, 45]]
 	for i in range(0, len(wall_loc)):
 		wall = Wall(wall_loc[i][0], wall_loc[i][1], wall_loc[i][2], wall_loc[i][3])
 		walllist.append(wall)
@@ -19,6 +19,7 @@ def populate_map(walllist):
 class Wall():
 	def __init__(self, x1, y1, x2, y2):
 		self.box = pygame.Rect(x1, y1, x2-x1, y2-y1)
-		self.color = green
+		self.box.normalize()
+		self.color = black
 		
 		
