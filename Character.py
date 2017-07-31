@@ -39,7 +39,7 @@ class Character():
 		if dx != 0:
 			self.move_single_axis(dx, 0, walllist)
 		if dy != 0:
-			self.move_single_axis(0, dy, walllist)
+			 self.move_single_axis(0, dy, walllist)
 
 	# checks collision, one axis at a time.  if a character moves into a wall, then it is immediately placed so that the
 		# leading face of the character is placed on the edge of the wall.  If a character is moving right and is
