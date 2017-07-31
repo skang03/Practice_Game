@@ -29,7 +29,7 @@ class Character():
 		self.att = 0
 		self.size = 0
 		self.color = black
-		self.box = pygame.Rect(0, 0,self.size,self.size)
+		self.box = pygame.Rect(0, 0, self.size, self.size)
 		self.direction = 'up'
 		self.index = 0
 
@@ -76,26 +76,46 @@ class Player(Character):
 		self.index = 0
 		self.direction = 'up'
 
-	def attack(self, monsterlist):
+	def attack(self, monsterlist, walllist):
+		status = False #whether attack got through or not; used to see if green box should be drawn or not
 		self.attbox = pygame.Rect(0, 0, self.size, self.size)
-		if self.direction == 'right':
+		if self.direction == 'right' and self.attack_ok(walllist):
 			self.attbox.midleft = self.box.midright
 
-		elif self.direction == 'left':
+		elif self.direction == 'left' and self.attack_ok(walllist):
 			self.attbox.midright = self.box.midleft
 
-		if self.direction == 'down':
+		if self.direction == 'down' and self.attack_ok(walllist):
 			self.attbox.midtop = self.box.midbottom
 
-		elif self.direction == 'up':
+		elif self.direction == 'up' and self.attack_ok(walllist):
 			self.attbox.midbottom = self.box.midtop
 
 		for mon in monsterlist:
 			if self.attbox.colliderect(mon.box):
 				mon.hp = 0
+		
+		
 
-
-
+	def attack_ok(self, walllist):
+		if self.direction == 'right':
+			for wall in walllist:
+				if self.box.right == wall.box.left:
+					return False
+		elif self.direction == 'left':
+			for wall in walllist:
+				if self.box.left == wall.box.right:
+					return False
+		elif self.direction == 'down':
+			for wall in walllist:
+				if self.box.bottom == wall.box.top:
+					return False
+		elif self.direction == 'up':
+			for wall in walllist:
+				if self.box.top == wall.box.bottom:
+					return False
+		return True
+			
 
 class Monster(Character):
 	def __init__(self, x, y):
@@ -107,7 +127,8 @@ class Monster(Character):
 		self.box = pygame.Rect(x, y, self.size, self.size)
 		self.index = 0
 		self.direction = 'up'
-
+		self.exp = 10
+		
 	def move(self, player, walllist):
 		if self.box.centerx < player.box.centerx:
 			self.move_single_axis(self.movespeed, 0, walllist)
