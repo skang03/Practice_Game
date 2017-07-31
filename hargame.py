@@ -6,6 +6,12 @@ from Character import *
 from Items import *
 from Maps import *
 
+#camera
+#no attack thru wall
+#mon spawn
+#mon colliding w player //knockback and invulnerability
+#sprites
+
 pygame.init()
 
 white = (255, 255, 255)
@@ -69,7 +75,7 @@ def wall_draw(wall):
 #spawns monsters at specific coordinates and places them in the monster list
 #to do: give rules for monster spawns
 def mon_spawn(monsterlist):
-	threading.Timer(5.0, mon_spawn).start()
+	
 	x = random.randint(50, 700)
 	y = random.randint(50, 500)
 	mon = Monster(x, y)
@@ -126,7 +132,7 @@ def gameLoop():
 		#	user until the attack animation is complete.  delete this if that's annoying to you but I like my
 		#	gameboy legend of zelda combat
 		if playermode == 'attack':
-			dood.attack(monsterlist)
+			dood.attack(monsterlist, walllist)
 			if dood.update(20):
 				playermode = 'none'
 			else:
@@ -217,3 +223,5 @@ def gameLoop():
 	quit()
 
 gameLoop()
+
+# C:\Python36\python.exe "C:\Users\iho\Desktop\My Projects\top-down gamu\Practice_Game\hargame.py"
