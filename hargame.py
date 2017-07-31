@@ -83,11 +83,11 @@ def gameLoop():
 	gameOver = False
 
 	#player's current direction.  to do: add in-between directions
-	dir = 'none'
 	#makes the controllable player
 	dood = Player()
+	dirqueue = []
 	playermode = 'none'
-	playerdir = 'up'
+
 	#list of monsters and walls, gets sent to all methods that use collision detection like move and attack
 	monsterlist = []
 	walllist = []
@@ -122,7 +122,7 @@ def gameLoop():
 
 
 		if playermode == 'attack':
-			dood.attack(playerdir, monsterlist)
+			dood.attack(monsterlist)
 			if dood.update(10):
 				playermode = 'none'
 			else:
@@ -132,32 +132,55 @@ def gameLoop():
 		#moves the player in the direction of the currently pressed arrow keys
 		#assigns player direction for use in directional player actions
 		else:
+			#gets list of all key presses and makes the player do actions based on what is pressed
+			events = pygame.event.get()
+
+			print(events)
+			for event in events:
+				if event.type == pygame.QUIT:
+					gameExit = True
+
+				if (event.type == pygame.KEYUP):
+					if event.key == pygame.K_UP:
+						dirqueue.remove('up')
+					elif event.key == pygame.K_DOWN:
+						dirqueue.remove('down')
+					elif event.key == pygame.K_LEFT:
+						dirqueue.remove('left')
+					elif event.key == pygame.K_RIGHT:
+						dirqueue.remove('right')
+					if dirqueue.__len__() > 0:
+						dood.direction = dirqueue[0]
+
+				if (event.type == pygame.KEYDOWN):
+					if event.key == pygame.K_UP:
+						dirqueue.append('up')
+					elif event.key == pygame.K_DOWN:
+						dirqueue.append('down')
+					elif event.key == pygame.K_LEFT:
+						dirqueue.append('left')
+					elif event.key == pygame.K_RIGHT:
+						dirqueue.append('right')
+					if dirqueue.__len__() > 0:
+						dood.direction = dirqueue[0]
+					if event.key == pygame.K_z:
+						playermode = 'attack'
+
+
 			keys = pygame.key.get_pressed()
 			dx = 0
 			dy = 0
 			if keys[pygame.K_UP]:
 				dy = -dood.movespeed
-				playerdir = 'up'
+
 			if keys[pygame.K_DOWN]:
 				dy = dood.movespeed
-				playerdir = 'down'
 			if keys[pygame.K_LEFT]:
 				dx = -dood.movespeed
-				playerdir = 'left'
 			if keys[pygame.K_RIGHT]:
 				dx = dood.movespeed
-				playerdir = 'right'
 
 			dood.move(dx, dy, walllist)
-
-			#gets list of all key presses and makes the player do actions based on what is pressed
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					gameExit = True
-				if (event.type == pygame.KEYDOWN):
-					if event.key == pygame.K_z:
-						playermode = 'attack'
-
 
 		#moves and draws all the monsters
 		check_hp(monsterlist)

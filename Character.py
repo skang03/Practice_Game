@@ -30,6 +30,7 @@ class Character():
 		self.size = 0
 		self.color = black
 		self.box = pygame.Rect(0, 0,self.size,self.size)
+		self.direction = 'up'
 
 
 	def move(self, dx, dy, walllist):
@@ -60,19 +61,20 @@ class Player(Character):
 		self.box = pygame.Rect(300, 400, self.size, self.size)
 		self.attbox = None
 		self.index = 0
+		self.direction = 'up'
 
-	def attack(self, dir, monsterlist):
+	def attack(self, monsterlist):
 		self.attbox = pygame.Rect(0, 0, self.size, self.size)
-		if dir == 'right':
+		if self.direction == 'right':
 			self.attbox.midleft = self.box.midright
 
-		elif dir == 'left':
+		elif self.direction == 'left':
 			self.attbox.midright = self.box.midleft
 
-		elif dir == 'down':
+		if self.direction == 'down':
 			self.attbox.midtop = self.box.midbottom
 
-		else:
+		elif self.direction == 'up':
 			self.attbox.midbottom = self.box.midtop
 
 		for mon in monsterlist:
