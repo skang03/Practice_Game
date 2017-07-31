@@ -31,14 +31,20 @@ class Character():
 		self.color = black
 		self.box = pygame.Rect(0, 0,self.size,self.size)
 		self.direction = 'up'
+		self.index = 0
 
-
+	# dx and dy are the amounts that the character will move per frame.  negative is left/up, positive is right/down
+		# splits the dx and dy into two separate moves for easy collision detection
 	def move(self, dx, dy, walllist):
 		if dx != 0:
 			self.move_single_axis(dx, 0, walllist)
 		if dy != 0:
 			self.move_single_axis(0, dy, walllist)
 
+	# checks collision, one axis at a time.  if a character moves into a wall, then it is immediately placed so that the
+		# leading face of the character is placed on the edge of the wall.  If a character is moving right and is
+		# suddenly in a wall, that means it must have hit the left face of the wall.  we put the right face of the
+		# character onto the left side of the wall and nothing ever gets stuck or phases through corners etc
 	def move_single_axis(self, dx, dy, walllist):
 		self.box.x += dx
 		self.box.y += dy
@@ -49,6 +55,13 @@ class Character():
 				if dx > 0: self.box.right = wall.box.left
 				if dy < 0: self.box.top = wall.box.bottom
 				if dy > 0: self.box.bottom = wall.box.top
+
+	def update(self, frames):
+		if self.index < frames:
+			self.index += 1
+			return False
+		self.index = 0
+		return True
 
 
 class Player(Character):
@@ -81,13 +94,6 @@ class Player(Character):
 			if self.attbox.colliderect(mon.box):
 				mon.hp = 0
 
-	def update(self, frames):
-		if self.index < frames:
-			self.index += 1
-			return False
-		self.index = 0
-		return True
-
 
 
 
@@ -99,7 +105,18 @@ class Monster(Character):
 		self.size = 10
 		self.color = gold
 		self.box = pygame.Rect(x, y, self.size, self.size)
+		self.index = 0
+		self.direction = 'up'
 
+	def move(self, player, walllist):
+		if self.box.centerx < player.box.centerx:
+			self.move_single_axis(self.movespeed, 0, walllist)
+		elif self.box.centerx > player.box.centerx:
+			self.move_single_axis(-self.movespeed, 0, walllist)
+		if self.box.centery < player.box.centery:
+			self.move_single_axis(0, self.movespeed, walllist)
+		elif self.box.centery > player.box.centery:
+			self.move_single_axis(0, -self.movespeed, walllist)
 
 	def attack(self, player):
 		pass

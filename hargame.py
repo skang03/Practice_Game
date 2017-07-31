@@ -82,9 +82,10 @@ def gameLoop():
 	gameExit = False
 	gameOver = False
 
-	#player's current direction.  to do: add in-between directions
 	#makes the controllable player
 	dood = Player()
+
+	#a queue for directions that enables strafing.  Example below
 	dirqueue = []
 	playermode = 'none'
 
@@ -93,6 +94,7 @@ def gameLoop():
 	walllist = []
 
 #makes monsters spawn in a separate thread with its own timing, only needs to be called once outside of the game loop
+	#BROKEN
 	mon_spawn(monsterlist)
 	populate_map(walllist)
 
@@ -120,25 +122,41 @@ def gameLoop():
 		for wall in walllist:
 			wall_draw(wall)
 
-
+		#attack mode exists because it calls dood.update instead of listening for button presses.  this disables the
+		#	user until the attack animation is complete.  delete this if that's annoying to you but I like my
+		#	gameboy legend of zelda combat
 		if playermode == 'attack':
 			dood.attack(monsterlist)
-			if dood.update(10):
+			if dood.update(20):
 				playermode = 'none'
 			else:
 				pygame.draw.rect(gameDisplay, green, dood.attbox)
 
 
-		#moves the player in the direction of the currently pressed arrow keys
-		#assigns player direction for use in directional player actions
+
 		else:
-			#gets list of all key presses and makes the player do actions based on what is pressed
+			#gets list of all key presses for this frame and makes the player do actions based on what is pressed
 			events = pygame.event.get()
 
-			print(events)
 			for event in events:
+				#always goes first when listening for events
 				if event.type == pygame.QUIT:
 					gameExit = True
+
+			# changes the player's direction to the currently pressed arrow keys and assigns player direction for
+				# use in directional player actions.  This does so using a queue for directions (dirqueue)
+				# For example: you press up first, and up gets added to the queue.  Up is first in queue so dood's
+				# direction becomes up.
+				# Then you let go of up and it gets removed from the queue.  Nothing happens because dirqueue.len !> 0
+				# Next you press left and it gets added to the queue. Then you press up and it gets added too.
+				# dirqueue = [up, left]
+				# Dood's direction becomes up because up is first in the queue.
+				# You are moving up and left while facing up because after this "for event in events" loop there is a
+				# thing that listens for any direction keys and moves the player without worrying about what direction
+				# they're facing.
+				# You let go of up and up is removed from the queue.
+				# dirqueue = [left]
+				# Now left is first in the queue and dood's direction becomes left.
 
 				if (event.type == pygame.KEYUP):
 					if event.key == pygame.K_UP:
@@ -166,25 +184,25 @@ def gameLoop():
 					if event.key == pygame.K_z:
 						playermode = 'attack'
 
-
+		# checks what keys are currently pressed and changes the movement parameters dy and dx to the appropriate values
 			keys = pygame.key.get_pressed()
 			dx = 0
 			dy = 0
 			if keys[pygame.K_UP]:
 				dy = -dood.movespeed
-
 			if keys[pygame.K_DOWN]:
 				dy = dood.movespeed
 			if keys[pygame.K_LEFT]:
 				dx = -dood.movespeed
 			if keys[pygame.K_RIGHT]:
 				dx = dood.movespeed
-
+			#moves in the x direction by dx pixels and in the y direction by dy pixels
 			dood.move(dx, dy, walllist)
 
 		#moves and draws all the monsters
 		check_hp(monsterlist)
 		for mon in monsterlist:
+			mon.move(dood, walllist)
 			char_draw(mon)
 		#finally draws our dood
 		char_draw(dood)
