@@ -66,18 +66,14 @@ def map_draw():
 	gameDisplay.fill(white, [50, 50, 700, 500])
 
 
-#draws walls
-def wall_draw(wall):
-	box = wall.box
-	color = wall.color
-	pygame.draw.rect(gameDisplay, color, box)
-
-
 #main function that contains game loop
 def gameLoop():
 	#parameters that check game state
 	gameExit = False
 	gameOver = False
+
+	# makes the world surface
+	world = pygame.Surface((1000,1000))
 
 	#makes the controllable player
 	dood = Player()
@@ -115,9 +111,9 @@ def gameLoop():
 						gameLoop()
 
 		#draw the map
-		map_draw()
+		world.fill(white,[50,50,700,500])
 		for wall in walllist:
-			wall_draw(wall)
+			world.blit(wall.image,(wall.box.x, wall.box.y))
 
 		# go through the monsterlist and if there's a monsterspawner then make it run the spawn function
 		for monspawn in monsterspawnerlist:
@@ -131,7 +127,7 @@ def gameLoop():
 			if dood.wait(20):
 				playermode = 'none'
 			else:
-				pygame.draw.rect(gameDisplay, green, dood.attbox)
+				world.blit(dood.attack_image,(dood.attbox.x,dood.attbox.y))
 			
 
 
@@ -204,9 +200,11 @@ def gameLoop():
 		check_hp(monsterlist)
 		for mon in monsterlist:
 			mon.move(dood, walllist)
-			char_draw(mon)
+			mon.render(world)
 		#finally draws our dood
-		char_draw(dood)
+		dood.render(world)
+		gameDisplay.blit(world,(0,0))
+
 
 		#must call this to see what we've drawn
 		pygame.display.update()

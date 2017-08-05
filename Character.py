@@ -12,7 +12,6 @@ clock = pygame.time.Clock()
 
 
 
-
 #checks hp and removes it from the list if its hp drops to 0
 def check_hp(monsterlist):
 	for mon in monsterlist:
@@ -38,10 +37,11 @@ class Character():
 		self.movespeed = 0
 		self.att = 0
 		self.size = 0
-		self.color = black
+		self.color = None
 		self.box = pygame.Rect(0, 0, self.size, self.size)
 		self.direction = 'up'
 		self.index = 0
+		self.image = pygame.Surface((16,16))
 
 	# dx and dy are the amounts that the character will move per frame.  negative is left/up, positive is right/down
 		# splits the dx and dy into two separate moves for easy collision detection
@@ -66,6 +66,8 @@ class Character():
 				if dy < 0: self.box.top = wall.box.bottom
 				if dy > 0: self.box.bottom = wall.box.top
 
+	# called when we want character to count frames.  would be called once per game loop until it returns true, and then
+	# 	something would happen and the count resets
 	def wait(self, frames):
 		if self.index < frames:
 			self.index += 1
@@ -73,18 +75,26 @@ class Character():
 		self.index = 0
 		return True
 
+	def render(self, display):
+		display.blit(self.image, (self.box.x, self.box.y))
+
 
 class Player(Character):
 	def __init__(self):
+		super(Player, self).__init__()
 		self.hp = 5
 		self.movespeed = 5
 		self.att = 1
 		self.color = red
 		self.size = 30
+		self.image = pygame.Surface((self.size, self.size))
+		self.image.fill(self.color)
 		self.box = pygame.Rect(300, 400, self.size, self.size)
 		self.attbox = None
+		self.attack_image = None
 		self.index = 0
 		self.direction = 'up'
+		
 
 	def attack(self, monsterlist, walllist):
 		status = False #whether attack got through or not; used to see if green box should be drawn or not
@@ -95,7 +105,7 @@ class Player(Character):
 			for wall in walllist:
 				if self.attbox.colliderect(wall.box):
 					self.attbox = pygame.Rect(0, 0, wall.box.left - self.box.right, self.size)
-					self.attbox.midleft = self.box.midright		
+					self.attbox.midleft = self.box.midright
 
 		elif self.direction == 'left':		
 			self.attbox.midright = self.box.midleft
@@ -117,18 +127,23 @@ class Player(Character):
 				if self.attbox.colliderect(wall.box):
 					self.attbox = pygame.Rect(0, 0, self.size, self.box.top - wall.box.bottom)
 					self.attbox.midbottom = self.box.midtop	
-			
+
+		# this is what actually gets drawn so we need to make sure the attack image is the same size as the attack box
+		self.attack_image = pygame.Surface((self.attbox.width, self.attbox.height))
+
 		for mon in monsterlist:
 			if self.attbox.colliderect(mon.box):
 				mon.hp = 0
 
 class Monster(Character):
 	def __init__(self, x, y):
+		super(Monster, self).__init__()
 		self.hp = 1
 		self.movespeed = 1
 		self.att = 1
 		self.size = 10
 		self.color = gold
+		self.image.fill(self.color)
 		self.box = pygame.Rect(x, y, self.size, self.size)
 		self.index = 0
 		self.direction = 'up'
