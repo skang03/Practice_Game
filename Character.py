@@ -79,43 +79,38 @@ class Player(Character):
 	def attack(self, monsterlist, walllist):
 		status = False #whether attack got through or not; used to see if green box should be drawn or not
 		self.attbox = pygame.Rect(0, 0, self.size, self.size)
-		if self.direction == 'right' and self.attack_ok(walllist):
+		
+		if self.direction == 'right':
 			self.attbox.midleft = self.box.midright
+			for wall in walllist:
+				if self.attbox.colliderect(wall.box):
+					self.attbox = pygame.Rect(0, 0, wall.box.left - self.box.right, self.size)
+					self.attbox.midleft = self.box.midright		
 
-		elif self.direction == 'left' and self.attack_ok(walllist):
+		elif self.direction == 'left':		
 			self.attbox.midright = self.box.midleft
-
-		if self.direction == 'down' and self.attack_ok(walllist):
+			for wall in walllist:
+				if self.attbox.colliderect(wall.box):
+					self.attbox = pygame.Rect(0, 0, self.box.left - wall.box.right, self.size)
+					self.attbox.midright = self.box.midleft			
+			
+		if self.direction == 'down':
 			self.attbox.midtop = self.box.midbottom
+			for wall in walllist:
+				if self.attbox.colliderect(wall.box):
+					self.attbox = pygame.Rect(0, 0, self.size, wall.box.top - self.box.bottom)
+					self.attbox.midtop = self.box.midbottom	
 
-		elif self.direction == 'up' and self.attack_ok(walllist):
+		elif self.direction == 'up':
 			self.attbox.midbottom = self.box.midtop
-
+			for wall in walllist:
+				if self.attbox.colliderect(wall.box):
+					self.attbox = pygame.Rect(0, 0, self.size, self.box.top - wall.box.bottom)
+					self.attbox.midbottom = self.box.midtop	
+			
 		for mon in monsterlist:
 			if self.attbox.colliderect(mon.box):
 				mon.hp = 0
-		
-		
-
-	def attack_ok(self, walllist):
-		if self.direction == 'right':
-			for wall in walllist:
-				if self.box.right == wall.box.left:
-					return False
-		elif self.direction == 'left':
-			for wall in walllist:
-				if self.box.left == wall.box.right:
-					return False
-		elif self.direction == 'down':
-			for wall in walllist:
-				if self.box.bottom == wall.box.top:
-					return False
-		elif self.direction == 'up':
-			for wall in walllist:
-				if self.box.top == wall.box.bottom:
-					return False
-		return True
-			
 
 class Monster(Character):
 	def __init__(self, x, y):

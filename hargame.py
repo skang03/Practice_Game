@@ -137,7 +137,7 @@ def gameLoop():
 				playermode = 'none'
 			else:
 				pygame.draw.rect(gameDisplay, green, dood.attbox)
-
+			
 
 
 		else:
