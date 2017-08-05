@@ -19,6 +19,16 @@ def check_hp(monsterlist):
 		if mon.hp <= 0:
 			monsterlist.remove(mon)
 
+#fills map with monster spawners that arent in the wall
+def populate_spawner(walllist, monsterlist, iter):
+	for i in range(0, iter):
+		x = random.randint(50, 750)
+		y = random.randint(50, 550)
+		for wall in walllist:
+			if wall.box.collidepoint(x,y):
+				continue
+		spawner = MonsterSpawner(x, y, 'lol')
+		monsterlist.append(spawner)
 
 #base class for all actors
 #contains a rectangle that is used for collision detection and drawing
@@ -56,7 +66,7 @@ class Character():
 				if dy < 0: self.box.top = wall.box.bottom
 				if dy > 0: self.box.bottom = wall.box.top
 
-	def update(self, frames):
+	def wait(self, frames):
 		if self.index < frames:
 			self.index += 1
 			return False
@@ -136,3 +146,27 @@ class Monster(Character):
 
 	def attack(self, player):
 		pass
+
+#spawns monsters in a small radius of the spawner on a timer and places them in the monster list
+class MonsterSpawner(Character):
+	def __init__(self, x, y, type):
+		self.hp = 1
+		self.movespeed = 1
+		self.att = 1
+		self.size = 10
+		self.color = gold
+		self.box = pygame.Rect(x, y, self.size, self.size)
+		self.index = 0
+		self.direction = 'up'
+		self.exp = 10
+		self.type = type
+
+	def spawn(self, timer, monsterlist):
+		if self.index > timer:
+			x = random.randint(self.box.centerx - 50, self.box.centerx + 50)
+			y = random.randint(self.box.centery - 50, self.box.centery - 50)
+			mon = Monster(x, y)
+			monsterlist.append(mon)
+			self.index = 0
+
+		else: self.index += 1

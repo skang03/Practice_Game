@@ -72,15 +72,6 @@ def wall_draw(wall):
 	color = wall.color
 	pygame.draw.rect(gameDisplay, color, box)
 
-#spawns monsters at specific coordinates and places them in the monster list
-#to do: give rules for monster spawns
-def mon_spawn(monsterlist):
-	
-	x = random.randint(50, 700)
-	y = random.randint(50, 500)
-	mon = Monster(x, y)
-	monsterlist.append(mon)
-
 
 #main function that contains game loop
 def gameLoop():
@@ -97,12 +88,12 @@ def gameLoop():
 
 	#list of monsters and walls, gets sent to all methods that use collision detection like move and attack
 	monsterlist = []
+	monsterspawnerlist = []
 	walllist = []
 
-#makes monsters spawn in a separate thread with its own timing, only needs to be called once outside of the game loop
-	#BROKEN
-	mon_spawn(monsterlist)
+# populates the list with walls and monster spawners
 	populate_map(walllist)
+	populate_spawner(walllist, monsterspawnerlist, 3)
 
 	#main loop, happens 60 times per second
 	while not gameExit:
@@ -128,12 +119,16 @@ def gameLoop():
 		for wall in walllist:
 			wall_draw(wall)
 
+		# go through the monsterlist and if there's a monsterspawner then make it run the spawn function
+		for monspawn in monsterspawnerlist:
+				monspawn.spawn(600, monsterlist)
+
 		#attack mode exists because it calls dood.update instead of listening for button presses.  this disables the
 		#	user until the attack animation is complete.  delete this if that's annoying to you but I like my
 		#	gameboy legend of zelda combat
 		if playermode == 'attack':
 			dood.attack(monsterlist, walllist)
-			if dood.update(20):
+			if dood.wait(20):
 				playermode = 'none'
 			else:
 				pygame.draw.rect(gameDisplay, green, dood.attbox)
