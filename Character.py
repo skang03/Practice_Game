@@ -76,7 +76,10 @@ class Character():
 		self.index = 0
 		return True
 
-	def render(self, display):
+	def render(self, display, box):
+		background = pygame.Surface((box.width, box.height))
+		background.fill(white) # this should be the background.
+		display.blit(background, (box.x, box.y))
 		display.blit(self.image, (self.box.x, self.box.y))
 
 
@@ -169,6 +172,8 @@ class Player(Character):
 
 		# this is what actually gets drawn so we need to make sure the attack image is the same size as the attack box
 		self.attack_image = pygame.Surface((self.attbox.width, self.attbox.height)).convert()
+
+
 
 		for mon in monsterlist:
 			if self.attbox.colliderect(mon.box):

@@ -89,7 +89,7 @@ def gameLoop():
 
 	# makes the world surface
 	world = pygame.Surface((1000,1000)).convert()
-	camera = (0,0)
+	camera = basecamera = (0,0)
 
 	#makes the controllable player
 	dood = Player()
@@ -104,9 +104,18 @@ def gameLoop():
 	monsterspawnerlist = []
 	walllist = []
 
-# populates the list with walls and monster spawners
+	# populates the list with walls and monster spawners
 	populate_map(walllist)
 	populate_spawner(walllist, monsterspawnerlist, 3)
+
+	# draw the map
+	gameDisplay.fill(black)
+	gameDisplay.fill(white, [50, 50, 700, 500])
+	for wall in walllist:
+		gameDisplay.blit(wall.image, (wall.box.x, wall.box.y))
+	pygame.display.update()
+
+
 
 	#main loop, happens 60 times per second
 	while not gameExit:
@@ -127,11 +136,7 @@ def gameLoop():
 					if event.key == pygame.K_a:
 						gameLoop()
 
-		#draw the map
-		gameDisplay.fill(black)
-		gameDisplay.fill(white,[50,50,700,500])
-		for wall in walllist:
-			gameDisplay.blit(wall.image,(wall.box.x, wall.box.y))
+		dirtyboxes = []  # for all the rects that are gonna be updated
 
 		# go through the monsterlist and if there's a monsterspawner then make it run the spawn function
 		for monspawn in monsterspawnerlist:
@@ -142,11 +147,11 @@ def gameLoop():
 		#	gameboy legend of zelda combat
 		if playermode == 'attack':
 			dood.attack(monsterlist, walllist)
-			if dood.wait(20):
+			if dood.wait(20): # if the dood waited 20 frames
 				playermode = 'none'
 			else:
-				world.blit(dood.attack_image,(dood.attbox.x,dood.attbox.y))
-
+				gameDisplay.blit(dood.attack_image,(dood.attbox.x,dood.attbox.y))
+				dirtyboxes.append(dood.attbox)
 
 
 		else:
@@ -212,24 +217,23 @@ def gameLoop():
 			if keys[pygame.K_RIGHT]:
 				dx = dood.movespeed
 			#moves in the x direction by dx pixels and in the y direction by dy pixels
+			doodbox = pygame.Rect(dood.box) # create new rect that saves previous position so we can erase the previous image before drawing the new one
+			dirtyboxes.append(doodbox)
 			camera = dood.move(dx, dy, walllist, camera)
 
 		#moves and draws all the monsters
 		check_hp(monsterlist)
 		for mon in monsterlist:
+			monbox = pygame.Rect(mon.box)
+			dirtyboxes.append(monbox) # want to save previous position of mon so we can erase it and draw a new one in the next step
 			mon.move(dood, walllist)
-			mon.render(gameDisplay)
+			dirtyboxes.append(mon.box)
+			mon.render(gameDisplay, monbox)
+			
 		#finally draws our dood
-		dood.render(world)
-
-
-		dirtyrects = []
-		for mon in monsterlist:
-			dirtyrects.append(mon.box)
-		dirtyrects.append(dood.box)
-
+		dood.render(gameDisplay, doodbox)
 		#must call this to see what we've drawn
-		pygame.display.update(dirtyrects)
+		pygame.display.update(dirtyboxes)
 		#framerate
 		clock.tick(60)
 
