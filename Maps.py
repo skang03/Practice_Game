@@ -24,4 +24,11 @@ class Wall():
 		self.box.normalize()
 		self.color = black
 		
-		
+
+# Class made in order to determine what gets updated.  prevents entire screen from being re-rendered.
+class Background_Tile():
+	def __init__(self, x, y, size):
+		self.box = pygame.Rect((x, y), (size, size))
+		self.image = pygame.Surface((size,size)).convert()
+		self.image.fill(white)# white should be replaced with ground tile sprite
+		self.is_touched = False

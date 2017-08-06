@@ -87,9 +87,17 @@ def gameLoop():
 	gameExit = False
 	gameOver = False
 
+	worldsize = 1000
 	# makes the world surface
-	world = pygame.Surface((1000,1000)).convert()
+	world = pygame.Surface((worldsize, worldsize)).convert()
 	camera = basecamera = (0,0)
+
+	# background tiles of size 100x100 pixels
+	tiles = []
+	for i in range(0, worldsize, int(worldsize/10)):
+		for j in range(0, worldsize, int(worldsize/10)):
+			tile = Background_Tile(i, j, int(worldsize/10))
+			tiles.append(tile)
 
 	#makes the controllable player
 	dood = Player()
@@ -110,7 +118,8 @@ def gameLoop():
 
 	# draw the map
 	gameDisplay.fill(black)
-	gameDisplay.fill(white, [50, 50, 700, 500])
+	for tile in tiles:
+		gameDisplay.blit(tile.image, (tile.box.x, tile.box.y))
 	for wall in walllist:
 		gameDisplay.blit(wall.image, (wall.box.x, wall.box.y))
 	pygame.display.update()
