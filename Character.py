@@ -41,7 +41,7 @@ class Character():
 		self.box = pygame.Rect(0, 0, self.size, self.size)
 		self.direction = 'up'
 		self.index = 0
-		self.image = pygame.Surface((16,16))
+		self.image = pygame.Surface((16,16)).convert()
 
 	# dx and dy are the amounts that the character will move per frame.  negative is left/up, positive is right/down
 		# splits the dx and dy into two separate moves for easy collision detection
@@ -66,6 +66,7 @@ class Character():
 				if dy < 0: self.box.top = wall.box.bottom
 				if dy > 0: self.box.bottom = wall.box.top
 
+
 	# called when we want character to count frames.  would be called once per game loop until it returns true, and then
 	# 	something would happen and the count resets
 	def wait(self, frames):
@@ -87,14 +88,52 @@ class Player(Character):
 		self.att = 1
 		self.color = red
 		self.size = 30
-		self.image = pygame.Surface((self.size, self.size))
+		self.image = pygame.Surface((self.size, self.size)).convert()
 		self.image.fill(self.color)
-		self.box = pygame.Rect(300, 400, self.size, self.size)
+		self.box = pygame.Rect(200, 300, self.size, self.size)
 		self.attbox = None
 		self.attack_image = None
 		self.index = 0
 		self.direction = 'up'
-		
+
+
+	def move(self, dx, dy, walllist, camera):
+		if dx != 0:
+			camera = self.move_single_axis(dx, 0, walllist, camera)
+		if dy != 0:
+			camera = self.move_single_axis(0, dy, walllist, camera)
+
+		return camera
+
+	# checks collision, one axis at a time.  if a character moves into a wall, then it is immediately placed so that the
+		# leading face of the character is placed on the edge of the wall.  If a character is moving right and is
+		# suddenly in a wall, that means it must have hit the left face of the wall.  we put the right face of the
+		# character onto the left side of the wall and nothing ever gets stuck or phases through corners etc
+	def move_single_axis(self, dx, dy, walllist, camera_pos):
+		x,y = camera_pos
+		self.box.x += dx
+		x -= dx
+		self.box.y += dy
+		y -= dy
+
+
+		for wall in walllist:
+			if self.box.colliderect(wall.box):
+				if dx < 0:
+					self.box.left = wall.box.right
+					x = camera_pos[0]
+				if dx > 0:
+					self.box.right = wall.box.left
+					x = camera_pos[0]
+				if dy < 0:
+					self.box.top = wall.box.bottom
+					y = camera_pos[1]
+				if dy > 0:
+					self.box.bottom = wall.box.top
+					y = camera_pos[1]
+
+		camera_pos = (x, y)
+		return camera_pos
 
 	def attack(self, monsterlist, walllist):
 		status = False #whether attack got through or not; used to see if green box should be drawn or not
@@ -129,7 +168,7 @@ class Player(Character):
 					self.attbox.midbottom = self.box.midtop	
 
 		# this is what actually gets drawn so we need to make sure the attack image is the same size as the attack box
-		self.attack_image = pygame.Surface((self.attbox.width, self.attbox.height))
+		self.attack_image = pygame.Surface((self.attbox.width, self.attbox.height)).convert()
 
 		for mon in monsterlist:
 			if self.attbox.colliderect(mon.box):

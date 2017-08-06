@@ -23,7 +23,9 @@ clock = pygame.time.Clock()
 
 #set size of window
 #to do: make this adjustable in-game
-gameDisplay = pygame.display.set_mode((800, 600))
+screen_width = 1280
+screen_height = 720
+gameDisplay = pygame.display.set_mode((screen_width, screen_height), pygame.DOUBLEBUF)
 pygame.display.set_caption('supdoods')
 
 pygame.display.update()
@@ -66,6 +68,19 @@ def map_draw():
 	gameDisplay.fill(white, [50, 50, 700, 500])
 
 
+# when the player moves a certain number of pixels away from the camera position, we create a new surface and "stamp" it
+#  onto the display at the new camera position
+def world_shift(player, monsterlist, walllist, camera):
+	world = pygame.Surface((1000,1000)).convert()
+	world.fill(black)
+	world.fill(white, [50, 50, 700, 500])
+	for wall in walllist:
+		world.blit(wall.image, (wall.box.x, wall.box.y))
+	for mon in monsterlist:
+		mon.render(world)
+	player.render(world)
+	gameDisplay.blit(world, (camera[0], camera[1]))
+
 #main function that contains game loop
 def gameLoop():
 	#parameters that check game state
@@ -73,10 +88,12 @@ def gameLoop():
 	gameOver = False
 
 	# makes the world surface
-	world = pygame.Surface((1000,1000))
+	world = pygame.Surface((1000,1000)).convert()
+	camera = (0,0)
 
 	#makes the controllable player
 	dood = Player()
+	dood.box.center = (400, 300)
 
 	#a queue for directions that enables strafing.  Example below
 	dirqueue = []
@@ -111,9 +128,10 @@ def gameLoop():
 						gameLoop()
 
 		#draw the map
-		world.fill(white,[50,50,700,500])
+		gameDisplay.fill(black)
+		gameDisplay.fill(white,[50,50,700,500])
 		for wall in walllist:
-			world.blit(wall.image,(wall.box.x, wall.box.y))
+			gameDisplay.blit(wall.image,(wall.box.x, wall.box.y))
 
 		# go through the monsterlist and if there's a monsterspawner then make it run the spawn function
 		for monspawn in monsterspawnerlist:
@@ -128,7 +146,7 @@ def gameLoop():
 				playermode = 'none'
 			else:
 				world.blit(dood.attack_image,(dood.attbox.x,dood.attbox.y))
-			
+
 
 
 		else:
@@ -194,20 +212,24 @@ def gameLoop():
 			if keys[pygame.K_RIGHT]:
 				dx = dood.movespeed
 			#moves in the x direction by dx pixels and in the y direction by dy pixels
-			dood.move(dx, dy, walllist)
+			camera = dood.move(dx, dy, walllist, camera)
 
 		#moves and draws all the monsters
 		check_hp(monsterlist)
 		for mon in monsterlist:
 			mon.move(dood, walllist)
-			mon.render(world)
+			mon.render(gameDisplay)
 		#finally draws our dood
 		dood.render(world)
-		gameDisplay.blit(world,(0,0))
 
+
+		dirtyrects = []
+		for mon in monsterlist:
+			dirtyrects.append(mon.box)
+		dirtyrects.append(dood.box)
 
 		#must call this to see what we've drawn
-		pygame.display.update()
+		pygame.display.update(dirtyrects)
 		#framerate
 		clock.tick(60)
 
