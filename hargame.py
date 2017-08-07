@@ -81,6 +81,14 @@ def world_shift(player, monsterlist, walllist, camera):
 	player.render(world)
 	gameDisplay.blit(world, (camera[0], camera[1]))
 
+# finds all the Background_Tiles that the box is currently touching and returns those tiles, which will be put into a
+#  list and fed to pygame.display.update(dirtytiles)
+def findtile(box):
+	x = box.x
+	y = box.y
+
+
+
 #main function that contains game loop
 def gameLoop():
 	#parameters that check game state
@@ -229,6 +237,7 @@ def gameLoop():
 			doodbox = pygame.Rect(dood.box) # create new rect that saves previous position so we can erase the previous image before drawing the new one
 			dirtyboxes.append(doodbox)
 			camera = dood.move(dx, dy, walllist, camera)
+			dirtyboxes.append(dood.box)
 
 		#moves and draws all the monsters
 		check_hp(monsterlist)
@@ -238,7 +247,7 @@ def gameLoop():
 			mon.move(dood, walllist)
 			dirtyboxes.append(mon.box)
 			mon.render(gameDisplay, monbox)
-			
+
 		#finally draws our dood
 		dood.render(gameDisplay, doodbox)
 		#must call this to see what we've drawn
@@ -251,5 +260,7 @@ def gameLoop():
 	quit()
 
 gameLoop()
+
+
 
 # C:\Python36\python.exe "C:\Users\iho\Desktop\My Projects\top-down gamu\Practice_Game\hargame.py"
