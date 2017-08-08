@@ -83,9 +83,25 @@ def world_shift(player, monsterlist, walllist, camera):
 
 # finds all the Background_Tiles that the box is currently touching and returns those tiles, which will be put into a
 #  list and fed to pygame.display.update(dirtytiles)
-def findtile(box):
-	x = box.x
-	y = box.y
+def findtiles(box, tiles):
+	left = int(box.left/100) - 1
+	right = int(box.right/100) - 1       # get the sides of the box
+	top = int(box.top/100) - 1
+	bottom = int(box.bottom/100) - 1
+
+	dirtytileboxes = []               # the list of tiles we will be returning
+	i = [left]
+	j = [top]
+	if left != right:
+		i.append(right)
+	if top != bottom:
+		j.append(bottom)
+
+	for ii in i:
+		for jj in j:
+			dirtytiles.append(tiles[ii][jj].box)
+
+	return dirtytileboxes
 
 
 
@@ -95,17 +111,22 @@ def gameLoop():
 	gameExit = False
 	gameOver = False
 
+	# make this a multiple of 100
 	worldsize = 1000
+
 	# makes the world surface
 	world = pygame.Surface((worldsize, worldsize)).convert()
 	camera = basecamera = (0,0)
 
-	# background tiles of size 100x100 pixels
-	tiles = []
-	for i in range(0, worldsize, int(worldsize/10)):
-		for j in range(0, worldsize, int(worldsize/10)):
-			tile = Background_Tile(i, j, int(worldsize/10))
-			tiles.append(tile)
+	# background tiles of size 100x100 pixels.
+	tiles = [[]]
+	for i in range(0, worldsize, 100):
+
+		tiles.append([])
+
+		for j in range(0, worldsize, 100):
+			tile = Background_Tile(i, j, 100)
+			tiles[i].append(tile)
 
 	#makes the controllable player
 	dood = Player()
@@ -250,8 +271,17 @@ def gameLoop():
 
 		#finally draws our dood
 		dood.render(gameDisplay, doodbox)
+
+		# now we take dirtyboxes, a list of all the places where there was once a box and now there is none, or there was not a box and now there is one,
+		#  and go figure out what tiles have been touched.
+		dirtytiles = []
+		for box in dirtyboxes:
+			dirtytileboxes = findtiles(box, tiles)
+			for tilebox in dirtytileboxes:
+				dirtytiles.append(tilebox)
+
 		#must call this to see what we've drawn
-		pygame.display.update(dirtyboxes)
+		pygame.display.update(dirtytiles)
 		#framerate
 		clock.tick(60)
 
