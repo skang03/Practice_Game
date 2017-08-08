@@ -84,12 +84,11 @@ def world_shift(player, monsterlist, walllist, camera):
 # finds all the Background_Tiles that the box is currently touching and returns those tiles, which will be put into a
 #  list and fed to pygame.display.update(dirtytiles)
 def findtiles(box, tiles):
-	left = int(box.left/100) - 1
-	right = int(box.right/100) - 1       # get the sides of the box
-	top = int(box.top/100) - 1
-	bottom = int(box.bottom/100) - 1
-
-	dirtytileboxes = []               # the list of tiles we will be returning
+	left = int(box.left/100)
+	right = int(box.right/100)      # get the sides of the box
+	top = int(box.top/100)
+	bottom = int(box.bottom/100)
+	dirtytiles = []               # the list of tiles we will be returning
 	i = [left]
 	j = [top]
 	if left != right:
@@ -99,9 +98,9 @@ def findtiles(box, tiles):
 
 	for ii in i:
 		for jj in j:
-			dirtytiles.append(tiles[ii][jj].box)
+			dirtytiles.append(tiles[ii][jj])
 
-	return dirtytileboxes
+	return dirtytiles
 
 
 
@@ -120,12 +119,10 @@ def gameLoop():
 
 	# background tiles of size 100x100 pixels.
 	tiles = [[]]
-	for i in range(0, worldsize, 100):
-
+	for i in range(0, int(worldsize/100)):
 		tiles.append([])
-
-		for j in range(0, worldsize, 100):
-			tile = Background_Tile(i, j, 100)
+		for j in range(0, int(worldsize/100)):
+			tile = Background_Tile(i*100, j*100, 100)
 			tiles[i].append(tile)
 
 	#makes the controllable player
@@ -147,8 +144,9 @@ def gameLoop():
 
 	# draw the map
 	gameDisplay.fill(black)
-	for tile in tiles:
-		gameDisplay.blit(tile.image, (tile.box.x, tile.box.y))
+	for tilelist in tiles:
+		for tile in tilelist:
+			gameDisplay.blit(tile.image, (tile.box.x, tile.box.y))
 	for wall in walllist:
 		gameDisplay.blit(wall.image, (wall.box.x, wall.box.y))
 	pygame.display.update()
@@ -175,10 +173,20 @@ def gameLoop():
 						gameLoop()
 
 		dirtyboxes = []  # for all the rects that are gonna be updated
-
+		dirtytiles = []
 		# go through the monsterlist and if there's a monsterspawner then make it run the spawn function
 		for monspawn in monsterspawnerlist:
 				monspawn.spawn(600, monsterlist)
+
+		# moves and draws all the monsters
+		check_hp(monsterlist)
+		for mon in monsterlist:
+			monbox = pygame.Rect(mon.box)
+			dirtyboxes.append(monbox)  # want to save previous position of mon so we can erase it and draw a new one in the next step
+
+			mon.move(dood, walllist)
+
+			dirtyboxes.append(mon.box)
 
 		#attack mode exists because it calls dood.update instead of listening for button presses.  this disables the
 		#	user until the attack animation is complete.  delete this if that's annoying to you but I like my
@@ -186,6 +194,7 @@ def gameLoop():
 		if playermode == 'attack':
 			dood.attack(monsterlist, walllist)
 			if dood.wait(20): # if the dood waited 20 frames
+				dirtyboxes.append(dood.attbox)
 				playermode = 'none'
 			else:
 				gameDisplay.blit(dood.attack_image,(dood.attbox.x,dood.attbox.y))
@@ -260,28 +269,28 @@ def gameLoop():
 			camera = dood.move(dx, dy, walllist, camera)
 			dirtyboxes.append(dood.box)
 
-		#moves and draws all the monsters
-		check_hp(monsterlist)
-		for mon in monsterlist:
-			monbox = pygame.Rect(mon.box)
-			dirtyboxes.append(monbox) # want to save previous position of mon so we can erase it and draw a new one in the next step
-			mon.move(dood, walllist)
-			dirtyboxes.append(mon.box)
-			mon.render(gameDisplay, monbox)
-
-		#finally draws our dood
-		dood.render(gameDisplay, doodbox)
 
 		# now we take dirtyboxes, a list of all the places where there was once a box and now there is none, or there was not a box and now there is one,
 		#  and go figure out what tiles have been touched.
-		dirtytiles = []
+
 		for box in dirtyboxes:
 			dirtytileboxes = findtiles(box, tiles)
 			for tilebox in dirtytileboxes:
 				dirtytiles.append(tilebox)
 
+		for tile in dirtytiles:
+			tile.draw(gameDisplay)
+		for wall in walllist:
+			gameDisplay.blit(wall.image, (wall.box.x, wall.box.y))
+		for mon in monsterlist:
+			mon.draw(gameDisplay)
+		dood.draw(gameDisplay)
+
+		dirtytileboxes = []
+		for tile in dirtytiles:
+			dirtytileboxes.append(tile.box)
 		#must call this to see what we've drawn
-		pygame.display.update(dirtytiles)
+		pygame.display.update()
 		#framerate
 		clock.tick(60)
 

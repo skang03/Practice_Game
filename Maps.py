@@ -32,3 +32,6 @@ class Background_Tile():
 		self.image = pygame.Surface((size,size)).convert()
 		self.image.fill(white)# white should be replaced with ground tile sprite
 		self.is_touched = False
+
+	def draw(self, display):
+		display.blit(self.image, (self.box.x, self.box.y))
