@@ -95,6 +95,7 @@ class Player(Character):
 		self.attack_image = None
 		self.index = 0
 		self.direction = 'up'
+		self.openbox = None
 
 
 	def move(self, dx, dy, walllist, camera):
@@ -136,7 +137,6 @@ class Player(Character):
 		return camera_pos
 
 	def attack(self, monsterlist, walllist):
-		status = False #whether attack got through or not; used to see if green box should be drawn or not
 		self.attbox = pygame.Rect(0, 0, self.size, self.size)
 		
 		if self.direction == 'right':
@@ -173,7 +173,27 @@ class Player(Character):
 		for mon in monsterlist:
 			if self.attbox.colliderect(mon.box):
 				mon.hp = 0
+				
+	def open(self, itemlist, openitemlist):
+		self.openbox = pygame.Rect(0, 0, self.size, self.size)
+		
+		if self.direction == 'right':
+			self.openbox.midleft = self.box.midright
+					
+		elif self.direction == 'left':
+			self.openbox.midright = self.box.midleft
+					
+		if self.direction == 'down':
+			self.openbox.midtop = self.box.midbottom
 
+		elif self.direction == 'up':
+			self.openbox.midbottom = self.box.midtop
+
+		for item in itemlist:
+			if self.openbox.colliderect(item.box):
+				openitemlist.append(item)
+				itemlist.remove(item)
+		
 class Monster(Character):
 	def __init__(self, x, y):
 		super(Monster, self).__init__()
