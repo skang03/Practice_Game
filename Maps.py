@@ -16,8 +16,13 @@ def populate_map(walllist):
 	for i in range(0, len(wall_loc)):
 		wall = Wall(wall_loc[i][0], wall_loc[i][1], wall_loc[i][2], wall_loc[i][3])
 		walllist.append(wall)
+<<<<<<< HEAD
 
 class Wall(pygame.sprite.DirtySprite):
+=======
+		
+class Wall():
+>>>>>>> 4f97711849d11b9c2ac3943731bc0f06a45687ee
 	def __init__(self, x1, y1, x2, y2):
 		pygame.sprite.DirtySprite.__init__(self)
 		self.box = pygame.Rect(x1, y1, x2-x1, y2-y1)

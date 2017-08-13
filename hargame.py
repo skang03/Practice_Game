@@ -6,6 +6,7 @@ from Character import *
 from Items import *
 from Maps import *
 
+
 #camera
 #no attack thru wall
 #mon spawn
@@ -137,10 +138,13 @@ def gameLoop():
 	monsterlist = []
 	monsterspawnerlist = []
 	walllist = []
+	itemlist = []
+	openitemlist = []
 
 	# populates the list with walls and monster spawners
 	populate_map(walllist)
 	populate_spawner(walllist, monsterspawnerlist, 3)
+	make_item(itemlist)
 
 	# draw the map
 	gameDisplay.fill(black)
@@ -149,6 +153,8 @@ def gameLoop():
 			gameDisplay.blit(tile.image, (tile.box.x, tile.box.y))
 	for wall in walllist:
 		gameDisplay.blit(wall.image, (wall.box.x, wall.box.y))
+	for item in itemlist:
+		gameDisplay.blit(item.image, (item.box.x, item.box.y))
 	pygame.display.update()
 
 
@@ -200,6 +206,9 @@ def gameLoop():
 				gameDisplay.blit(dood.attack_image,(dood.attbox.x,dood.attbox.y))
 				dirtyboxes.append(dood.attbox)
 
+		if playermode == 'open':
+			dood.open(itemlist, openitemlist)
+			playermode = 'none'
 
 		else:
 			#gets list of all key presses for this frame and makes the player do actions based on what is pressed
@@ -250,6 +259,8 @@ def gameLoop():
 						dood.direction = dirqueue[0]
 					if event.key == pygame.K_z:
 						playermode = 'attack'
+					if event.key == pygame.K_a:
+						playermode = 'open'
 
 		# checks what keys are currently pressed and changes the movement parameters dy and dx to the appropriate values
 			keys = pygame.key.get_pressed()
@@ -282,6 +293,8 @@ def gameLoop():
 			tile.draw(gameDisplay)
 		for wall in walllist:
 			gameDisplay.blit(wall.image, (wall.box.x, wall.box.y))
+		for item in itemlist:
+			gameDisplay.blit(item.image, ((item.box.x, item.box.y)))
 		for mon in monsterlist:
 			mon.draw(gameDisplay)
 		dood.draw(gameDisplay)
