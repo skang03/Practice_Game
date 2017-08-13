@@ -290,7 +290,7 @@ def gameLoop():
 		for tile in dirtytiles:
 			dirtytileboxes.append(tile.box)
 		#must call this to see what we've drawn
-		pygame.display.update()
+		pygame.display.update(dirtytileboxes)
 		#framerate
 		clock.tick(60)
 

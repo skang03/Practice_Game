@@ -17,8 +17,9 @@ def populate_map(walllist):
 		wall = Wall(wall_loc[i][0], wall_loc[i][1], wall_loc[i][2], wall_loc[i][3])
 		walllist.append(wall)
 
-class Wall():
+class Wall(pygame.sprite.DirtySprite):
 	def __init__(self, x1, y1, x2, y2):
+		pygame.sprite.DirtySprite.__init__(self)
 		self.box = pygame.Rect(x1, y1, x2-x1, y2-y1)
 		self.image = pygame.Surface((abs(x2-x1), abs(y2-y1))).convert()
 		self.box.normalize()
@@ -26,8 +27,9 @@ class Wall():
 		
 
 # Class made in order to determine what gets updated.  prevents entire screen from being re-rendered.
-class Background_Tile():
+class Background_Tile(pygame.sprite.DirtySprite):
 	def __init__(self, x, y, size):
+		pygame.sprite.DirtySprite.__init__(self)
 		self.box = pygame.Rect((x, y), (size, size))
 		self.image = pygame.Surface((size,size)).convert()
 		self.image.fill(white)# white should be replaced with ground tile sprite

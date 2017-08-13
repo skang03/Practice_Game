@@ -29,10 +29,12 @@ def populate_spawner(walllist, monsterlist, iter):
 		spawner = MonsterSpawner(x, y, 'lol')
 		monsterlist.append(spawner)
 
-#base class for all actors
-#contains a rectangle that is used for collision detection and drawing
-class Character():
+# base class for all actors
+# contains a rectangle that is used for collision detection and drawing
+#
+class Character(pygame.sprite.DirtySprite):
 	def __init__(self):
+		pygame.sprite.DirtySprite.__init__(self)
 		self.hp = 0
 		self.movespeed = 0
 		self.att = 0
@@ -42,6 +44,7 @@ class Character():
 		self.direction = 'up'
 		self.index = 0
 		self.image = pygame.Surface((16,16)).convert()
+		self.dirty = 0
 
 	# dx and dy are the amounts that the character will move per frame.  negative is left/up, positive is right/down
 		# splits the dx and dy into two separate moves for easy collision detection
@@ -84,7 +87,7 @@ class Player(Character):
 	def __init__(self):
 		super(Player, self).__init__()
 		self.hp = 5
-		self.movespeed = 3
+		self.movespeed = 2
 		self.att = 1
 		self.color = red
 		self.size = 30
@@ -102,7 +105,6 @@ class Player(Character):
 			camera = self.move_single_axis(dx, 0, walllist, camera)
 		if dy != 0:
 			camera = self.move_single_axis(0, dy, walllist, camera)
-
 		return camera
 
 	# checks collision, one axis at a time.  if a character moves into a wall, then it is immediately placed so that the
