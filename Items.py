@@ -10,18 +10,19 @@ green = (0, 255, 0)
 gold = (212, 175, 55)
 clock = pygame.time.Clock()
 
-class Item():
+class Item(pygame.sprite.DirtySprite):
 	def __init__(self, x, y):
+		pygame.sprite.DirtySprite.__init__(self)
 		self.x = x
 		self.y = y
 		self.color = green
 		self.taken = False
 		self.cooldown = False
 		self.worn = False
-		self.box = pygame.Rect(x, y, 30, 30)
+		self.rect = pygame.Rect(x, y, 30, 30)
 		self.image = pygame.Surface((30, 30)).convert()
 		self.image.fill(self.color)
-		self.box.normalize()
+		self.rect.normalize()
 
 		
 class Hat(Item):
@@ -31,7 +32,7 @@ class Hat(Item):
 		self.min_level = min_level
 		self.defense = defense
 		
-	def worn(player):
+	def worn(self, player):
 		player.defense += self.defense 
 		
 def make_item(itemlist):

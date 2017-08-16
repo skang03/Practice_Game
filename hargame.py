@@ -57,10 +57,10 @@ def score(score):
 
 #call this to draw any Character
 def char_draw(character):
-	box = character.box
+	rect = character.rect
 	color = character.color
 
-	pygame.draw.rect(gameDisplay, color, box)
+	pygame.draw.rect(gameDisplay, color, rect)
 
 
 #draws borders
@@ -76,19 +76,19 @@ def world_shift(player, monsterlist, walllist, camera):
 	world.fill(black)
 	world.fill(white, [50, 50, 700, 500])
 	for wall in walllist:
-		world.blit(wall.image, (wall.box.x, wall.box.y))
+		world.blit(wall.image, (wall.rect.x, wall.rect.y))
 	for mon in monsterlist:
 		mon.render(world)
 	player.render(world)
 	gameDisplay.blit(world, (camera[0], camera[1]))
 
-# finds all the Background_Tiles that the box is currently touching and returns those tiles, which will be put into a
+# finds all the Background_Tiles that the rect is currently touching and returns those tiles, which will be put into a
 #  list and fed to pygame.display.update(dirtytiles)
-def findtiles(box, tiles):
-	left = int(box.left/100)
-	right = int(box.right/100)      # get the sides of the box
-	top = int(box.top/100)
-	bottom = int(box.bottom/100)
+def findtiles(rect, tiles):
+	left = int(rect.left/100)
+	right = int(rect.right/100)      # get the sides of the rect
+	top = int(rect.top/100)
+	bottom = int(rect.bottom/100)
 	dirtytiles = []               # the list of tiles we will be returning
 	i = [left]
 	j = [top]
@@ -105,7 +105,13 @@ def findtiles(box, tiles):
 
 
 
-#main function that contains game loop
+# main function that contains game loop
+# main loop structure:
+#	-draw sprites
+#	-update screen
+# 	-listen for input
+#	-do actions
+
 def gameLoop():
 	#parameters that check game state
 	gameExit = False
@@ -128,35 +134,51 @@ def gameLoop():
 
 	#makes the controllable player
 	dood = Player()
-	dood.box.center = (400, 300)
+	wall = Wall(200, 200, 900, 220)
+	dood.rect.center = (400, 300)
+	doodsprites = pygame.sprite.LayeredDirty((dood))
+	monsprites = pygame.sprite.LayeredDirty((dood))
+	wallsprites = pygame.sprite.LayeredDirty((wall))
+
 
 	#a queue for directions that enables strafing.  Example below
 	dirqueue = []
 	playermode = 'none'
 
-	#list of monsters and walls, gets sent to all methods that use collision detection like move and attack
-	monsterlist = []
-	monsterspawnerlist = []
-	walllist = []
-	itemlist = []
-	openitemlist = []
+	# #list of monsters and walls, gets sent to all methods that use collision detection like move and attack
+	# monsterlist = []
+	# monsterspawnerlist = []
+	# walllist = []
+	# itemlist = []
+	# openitemlist = []
+	#
+	# # populates the list with walls and monster spawners
+	# populate_map(walllist)
+	# populate_spawner(walllist, monsterspawnerlist, 3)
+	# make_item(itemlist)
+	#
+	# # draw the map
+	# gameDisplay.fill(black)
+	# for tilelist in tiles:
+	# 	for tile in tilelist:
+	# 		gameDisplay.blit(tile.image, (tile.rect.x, tile.rect.y))
+	# for wall in walllist:
+	# 	gameDisplay.blit(wall.image, (wall.rect.x, wall.rect.y))
+	# for item in itemlist:
+	# 	gameDisplay.blit(item.image, (item.rect.x, item.rect.y))
 
-	# populates the list with walls and monster spawners
-	populate_map(walllist)
-	populate_spawner(walllist, monsterspawnerlist, 3)
-	make_item(itemlist)
+	background = pygame.Surface((screen_width, screen_height))
+	background.fill(black)
+	background.fill(white, (50, 50 , screen_width - 100, screen_height - 100))
 
-	# draw the map
-	gameDisplay.fill(black)
-	for tilelist in tiles:
-		for tile in tilelist:
-			gameDisplay.blit(tile.image, (tile.box.x, tile.box.y))
-	for wall in walllist:
-		gameDisplay.blit(wall.image, (wall.box.x, wall.box.y))
-	for item in itemlist:
-		gameDisplay.blit(item.image, (item.box.x, item.box.y))
+	doodsprites.clear(gameDisplay, background)
+	monsprites.clear(gameDisplay, background)
+	wallsprites.clear(gameDisplay, background)
+
+	gameDisplay.blit(background,(0,0))
+	wallsprites.draw(gameDisplay)
+
 	pygame.display.update()
-
 
 
 	#main loop, happens 60 times per second
@@ -178,48 +200,49 @@ def gameLoop():
 					if event.key == pygame.K_a:
 						gameLoop()
 
-		dirtyboxes = []  # for all the rects that are gonna be updated
-		dirtytiles = []
-		# go through the monsterlist and if there's a monsterspawner then make it run the spawn function
-		for monspawn in monsterspawnerlist:
-				monspawn.spawn(600, monsterlist)
+		# DRAW THE SPRITES
+		doodsprites.update()
+		monsprites.update()
 
-		# moves and draws all the monsters
-		check_hp(monsterlist)
-		for mon in monsterlist:
-			monbox = pygame.Rect(mon.box)
-			dirtyboxes.append(monbox)  # want to save previous position of mon so we can erase it and draw a new one in the next step
+		rects1 = doodsprites.draw(gameDisplay)
+		rects2 = monsprites.draw(gameDisplay)
+		rects3 = wallsprites.draw(gameDisplay)
 
-			mon.move(dood, walllist)
+		if rects2 == None:
+			rects2 = []
+		if rects3 == None:
+			rects3 = []
 
-			dirtyboxes.append(mon.box)
+		rects = rects1 + rects2 + rects3
+		pygame.display.update(rects)
 
-		#attack mode exists because it calls dood.update instead of listening for button presses.  this disables the
+		# attack mode exists because it calls dood.update instead of listening for button presses.  this disables the
 		#	user until the attack animation is complete.  delete this if that's annoying to you but I like my
 		#	gameboy legend of zelda combat
 		if playermode == 'attack':
-			dood.attack(monsterlist, walllist)
-			if dood.wait(20): # if the dood waited 20 frames
-				dirtyboxes.append(dood.attbox)
+			dood.attack(monsprites, wallsprites)
+			if dood.wait(20):  # if the dood waited 20 frames
 				playermode = 'none'
 			else:
-				gameDisplay.blit(dood.attack_image,(dood.attbox.x,dood.attbox.y))
-				dirtyboxes.append(dood.attbox)
+				gameDisplay.blit(dood.attack_image, (dood.attbox.x, dood.attbox.y))
 
 		if playermode == 'open':
-			dood.open(itemlist, openitemlist)
-			playermode = 'none'
+			dood.open(monsprites, wallsprites)
+			if dood.wait(20):  # if the dood waited 20 frames
+				playermode = 'none'
+			else:
+				gameDisplay.blit(dood.attack_image, (dood.attbox.x, dood.attbox.y))
 
 		else:
-			#gets list of all key presses for this frame and makes the player do actions based on what is pressed
+			# gets list of all key presses for this frame and makes the player do actions based on what is pressed
 			events = pygame.event.get()
 
 			for event in events:
-				#always goes first when listening for events
+				# always goes first when listening for events
 				if event.type == pygame.QUIT:
 					gameExit = True
 
-			# changes the player's direction to the currently pressed arrow keys and assigns player direction for
+				# changes the player's direction to the currently pressed arrow keys and assigns player direction for
 				# use in directional player actions.  This does so using a queue for directions (dirqueue)
 				# For example: you press up first, and up gets added to the queue.  Up is first in queue so dood's
 				# direction becomes up.
@@ -262,7 +285,7 @@ def gameLoop():
 					if event.key == pygame.K_a:
 						playermode = 'open'
 
-		# checks what keys are currently pressed and changes the movement parameters dy and dx to the appropriate values
+				# checks what keys are currently pressed and changes the movement parameters dy and dx to the appropriate values
 			keys = pygame.key.get_pressed()
 			dx = 0
 			dy = 0
@@ -274,36 +297,42 @@ def gameLoop():
 				dx = -dood.movespeed
 			if keys[pygame.K_RIGHT]:
 				dx = dood.movespeed
-			#moves in the x direction by dx pixels and in the y direction by dy pixels
-			doodbox = pygame.Rect(dood.box) # create new rect that saves previous position so we can erase the previous image before drawing the new one
-			dirtyboxes.append(doodbox)
-			camera = dood.move(dx, dy, walllist, camera)
-			dirtyboxes.append(dood.box)
+
+			camera = dood.move(dx, dy, wallsprites, camera)
+		# # go through the monsterlist and if there's a monsterspawner then make it run the spawn function
+		# for monspawn in monsterspawnerlist:
+		# 		monspawn.spawn(600, monsterlist)
+		#
+		# # moves and draws all the monsters
+		# check_hp(monsterlist)
+		# for mon in monsterlist:
+		# 	monbox = pygame.Rect(mon.box)
+		# 	mon.move(dood, walllist)
+		# 	allsprites.append(mon)
+		#
+		#
 
 
-		# now we take dirtyboxes, a list of all the places where there was once a box and now there is none, or there was not a box and now there is one,
-		#  and go figure out what tiles have been touched.
 
-		for box in dirtyboxes:
-			dirtytileboxes = findtiles(box, tiles)
-			for tilebox in dirtytileboxes:
-				dirtytiles.append(tilebox)
 
-		for tile in dirtytiles:
-			tile.draw(gameDisplay)
-		for wall in walllist:
-			gameDisplay.blit(wall.image, (wall.box.x, wall.box.y))
-		for item in itemlist:
-			gameDisplay.blit(item.image, ((item.box.x, item.box.y)))
-		for mon in monsterlist:
-			mon.draw(gameDisplay)
-		dood.draw(gameDisplay)
 
-		dirtytileboxes = []
-		for tile in dirtytiles:
-			dirtytileboxes.append(tile.box)
-		#must call this to see what we've drawn
-		pygame.display.update(dirtytileboxes)
+		# 	#moves in the x direction by dx pixels and in the y direction by dy pixels
+		# 	doodbox = pygame.Rect(dood.box) # create new rect that saves previous position so we can erase the previous image before drawing the new one
+		#
+		#
+		#
+		# # now we take dirtyboxes, a list of all the places where there was once a box and now there is none, or there was not a box and now there is one,
+		# #  and go figure out what tiles have been touched.
+		#
+		# for wall in walllist:
+		# 	gameDisplay.blit(wall.image, (wall.box.x, wall.box.y))
+		# for item in itemlist:
+		# 	gameDisplay.blit(item.image, ((item.box.x, item.box.y)))
+		# for mon in monsterlist:
+		# 	mon.draw(gameDisplay)
+		# dood.draw(gameDisplay)
+		# #must call this to see what we've drawn
+		# pygame.display.update()
 		#framerate
 		clock.tick(60)
 

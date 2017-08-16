@@ -16,29 +16,27 @@ def populate_map(walllist):
 	for i in range(0, len(wall_loc)):
 		wall = Wall(wall_loc[i][0], wall_loc[i][1], wall_loc[i][2], wall_loc[i][3])
 		walllist.append(wall)
-<<<<<<< HEAD
+
+
 
 class Wall(pygame.sprite.DirtySprite):
-=======
-		
-class Wall():
->>>>>>> 4f97711849d11b9c2ac3943731bc0f06a45687ee
+
 	def __init__(self, x1, y1, x2, y2):
 		pygame.sprite.DirtySprite.__init__(self)
-		self.box = pygame.Rect(x1, y1, x2-x1, y2-y1)
+		self.rect = pygame.Rect(x1, y1, x2-x1, y2-y1)
 		self.image = pygame.Surface((abs(x2-x1), abs(y2-y1))).convert()
-		self.box.normalize()
+		self.rect.normalize()
 		self.color = black
+
+	def update(self):
+		self.dirty = 1
 		
 
 # Class made in order to determine what gets updated.  prevents entire screen from being re-rendered.
-class Background_Tile(pygame.sprite.DirtySprite):
+class Background_Tile(pygame.sprite.Sprite):
 	def __init__(self, x, y, size):
-		pygame.sprite.DirtySprite.__init__(self)
-		self.box = pygame.Rect((x, y), (size, size))
+		pygame.sprite.Sprite.__init__(self)
+		self.rect = pygame.Rect((x, y), (size, size))
 		self.image = pygame.Surface((size,size)).convert()
 		self.image.fill(white)# white should be replaced with ground tile sprite
 		self.is_touched = False
-
-	def draw(self, display):
-		display.blit(self.image, (self.box.x, self.box.y))
