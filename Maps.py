@@ -10,12 +10,12 @@ green = (0, 255, 0)
 gold = (212, 175, 55)
 clock = pygame.time.Clock()
 
-def populate_map(walllist):
+def populate_map(wallsprites):
 	#replace this with random generation
 	wall_loc = [[100, 100, 105, 450], [100, 450, 600, 455], [595, 450, 600, 200],[45, 45, 950, 50],[950, 45, 955, 755], [955, 755, 45, 750], [45, 755, 50, 45]]
 	for i in range(0, len(wall_loc)):
 		wall = Wall(wall_loc[i][0], wall_loc[i][1], wall_loc[i][2], wall_loc[i][3])
-		walllist.append(wall)
+		wallsprites.add(wall)
 
 
 

@@ -211,7 +211,6 @@ class Player(Character):
 				openitemlist.append(item)
 				itemlist.remove(item)
 
-
 class Monster(Character):
 	def __init__(self, x, y):
 		super(Monster, self).__init__()

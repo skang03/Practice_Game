@@ -134,11 +134,10 @@ def gameLoop():
 
 	#makes the controllable player
 	dood = Player()
-	wall = Wall(200, 200, 900, 220)
-	dood.rect.center = (400, 300)
-	doodsprites = pygame.sprite.LayeredDirty((dood))
-	monsprites = pygame.sprite.LayeredDirty((dood))
-	wallsprites = pygame.sprite.LayeredDirty((wall))
+	dood.rect.center = (screen_width/2, screen_height/2)
+	sprites = pygame.sprite.Group((dood))
+	wallsprites = pygame.sprite.Group(())
+	populate_map(wallsprites)
 
 
 	#a queue for directions that enables strafing.  Example below
@@ -171,13 +170,12 @@ def gameLoop():
 	background.fill(black)
 	background.fill(white, (50, 50 , screen_width - 100, screen_height - 100))
 
-	doodsprites.clear(gameDisplay, background)
-	monsprites.clear(gameDisplay, background)
-	wallsprites.clear(gameDisplay, background)
+	sprites.clear(world, background)
+	wallsprites.clear(world,background)
 
-	gameDisplay.blit(background,(0,0))
-	wallsprites.draw(gameDisplay)
-
+	world.blit(background,(0,0))
+	sprites.draw(world)
+	gameDisplay.blit(world, camera)
 	pygame.display.update()
 
 
@@ -201,20 +199,16 @@ def gameLoop():
 						gameLoop()
 
 		# DRAW THE SPRITES
-		doodsprites.update()
-		monsprites.update()
+		sprites.update()
+		wallsprites.update()
 
-		rects1 = doodsprites.draw(gameDisplay)
-		rects2 = monsprites.draw(gameDisplay)
-		rects3 = wallsprites.draw(gameDisplay)
+		sprites.draw(world)
+		wallsprites.draw(world)
 
-		if rects2 == None:
-			rects2 = []
-		if rects3 == None:
-			rects3 = []
+		gameDisplay.blit(world,camera)
+		pygame.display.flip()
 
-		rects = rects1 + rects2 + rects3
-		pygame.display.update(rects)
+
 
 		# attack mode exists because it calls dood.update instead of listening for button presses.  this disables the
 		#	user until the attack animation is complete.  delete this if that's annoying to you but I like my
@@ -299,6 +293,16 @@ def gameLoop():
 				dx = dood.movespeed
 
 			camera = dood.move(dx, dy, wallsprites, camera)
+
+			if camera[0] > basecamera[0] + int(screen_width * 0.3) or camera[0] < basecamera[0] - int(
+							screen_width * 0.3):  # if player goes to about 90% of screen width to the right:
+				basecamera = (camera[0], basecamera[1])  # center the x-value of the camera on the player
+
+			if camera[1] > basecamera[1] + int(screen_height * 0.3) or camera[1] < basecamera[1] - int(
+							screen_height * 0.3):  # if player goes to about 90% of screen width to the right:
+				basecamera = (basecamera[0], camera[1])  # center the x-value of the camera on the player
+
+
 		# # go through the monsterlist and if there's a monsterspawner then make it run the spawn function
 		# for monspawn in monsterspawnerlist:
 		# 		monspawn.spawn(600, monsterlist)
@@ -335,6 +339,7 @@ def gameLoop():
 		# pygame.display.update()
 		#framerate
 		clock.tick(60)
+
 
 	#pressing the quit button
 	pygame.quit()
